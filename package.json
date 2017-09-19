@@ -1,0 +1,28 @@
+{
+  "name": "date-log",
+  "version": "3.0.0",
+  "description": "Logger with ISO date prefix. Differentiate between log and error",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test especified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RaulSantosCalvo/date-log.git"
+  },
+  "keywords": [
+    "log",
+    "logger",
+    "date",
+    "console"
+  ],
+  "author": "RaulSantosCalvo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RaulSantosCalvo/date-log/issues"
+  },
+  "homepage": "https://github.com/RaulSantosCalvo/date-log#readme",
+  "dependencies": {
+    "geoip-lite": "^1.2.1"
+  }
+}
