@@ -22,13 +22,13 @@ mkdir log/$(date \"+%F+%T\") && forever -a -l forever.log -o log/$(date \"+%F+%T
 
 ## Functions:
 
-### Log.log(<string>, <object>)
+### Log.log(string, object)
 Performs console.log() of message, if given, and stringified object.
   
-### Log.error(<string>, <object>)
+### Log.error(string, object)
 Performs console.error() of message, if given, and stringified object.
 
-### Log.connection_log(<Request>)
+### Log.connection_log(Request)
 When a Request object is sent, this function **returns** an object with the following structure
 ```js
 {
