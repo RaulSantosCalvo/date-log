@@ -1,6 +1,6 @@
 {
   "name": "date-log",
-  "version": "3.1.0",
+  "version": "1.0.2",
   "description": "Logger with ISO date prefix. Differentiate between log and error",
   "main": "index.js",
   "scripts": {
