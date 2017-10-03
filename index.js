@@ -1,9 +1,7 @@
 var path = require('path')
   , geoip = require('geoip-lite')
-  , prettyjson = require('prettyjson')
   , winston = require('winston');
 require('winston-daily-rotate-file');
-const util = require('util')
 
 var date = function(){
   return '[' +
