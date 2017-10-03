@@ -1,6 +1,6 @@
 {
   "name": "date-log",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Logger with ISO date prefix. Differentiate between log and error",
   "main": "index.js",
   "scripts": {
@@ -24,6 +24,7 @@
   "homepage": "https://github.com/RaulSantosCalvo/date-log#readme",
   "dependencies": {
     "geoip-lite": "^1.2.1",
+    "prettyjson": "^1.2.1",
     "winston": "^2.4.0",
     "winston-daily-rotate-file": "^1.7.2"
   }
