@@ -1,84 +1,62 @@
 var path = require('path')
   , geoip = require('geoip-lite')
+  , prettyjson = require('prettyjson')
   , winston = require('winston');
 require('winston-daily-rotate-file');
-
-
-var mLogger;
-
-var LoggerHandler = function (){
-
-  var self = this;
-
-  var outLogger = new (winston.Logger)({
-    transports: [
-      new (winston.transports.DailyRotateFile)({
-        createTree: true,
-        datePattern: './log/yyyy/MM/dd/',
-        filename: './out.log',
-        json: false,
-        level: 'info',
-        name: 'info',
-        prepend: true
-      })
-    ]
-  });
-
-  var errLogger = new (winston.Logger)({
-    transports: [
-      new (winston.transports.DailyRotateFile)({
-        createTree: true,
-        datePattern: './log/yyyy/MM/dd/',
-        filename: './err.log',
-        json: false,
-        level: 'error',
-        name: 'error',
-        prepend: true
-      })
-    ]
-  });
-
-  self.log = function(s){
-    console.log("log!");
-    outLogger.info("log!");
-  }
-
-  self.err = function(s){
-    console.log("err!");
-    errLogger.error("log!");
-  }
-
-}
 
 var date = function(){
   return '[' +
     (new Date().toISOString().
     replace(/T/, ' ').      // replace T with a space
     replace(/\..+/, ''))     // delete the dot and everything after
-  + ']';
+    + ']';
 };
 
+var transport = new (winston.transports.DailyRotateFile)({
+  filename: './log',
+  datePattern: 'yyyy-MM-dd.',
+  prepend: true,
+  level: process.env.ENV === 'development' ? 'debug' : 'info'
+});
+
+var logger = function (filename, level){
+  return new (winston.transports.DailyRotateFile)({
+    createTree: true,
+    datePattern: './log/yyyy/MM/dd/',
+    filename: filename,
+    json: false,
+    level: level,
+    prepend: true,
+    timestamp: function() {
+      return date();
+    }
+  });
+}
+
+var outLogger = new (winston.Logger)({
+  transports: [ logger('./out.log', 'info') ]
+});
+
+var connLogger = new (winston.Logger)({
+  transports: [ logger('./conn.log', 'info') ]
+});
+
+var errLogger = new (winston.Logger)({
+  transports: [ logger('./err.log', 'error') ]
+});
+
 module.exports.log = function(msg, obj){
-  if (!mLogger) mLogger = new LoggerHandler();
   if (typeof msg === 'object') {
-    console.log("esto es un log");
-
-    var s = ''+date()+' '+JSON.stringify(msg);
-    console.log("s: ", s);
-
-    mLogger.log(s);
-
-    //console.log(date() + ' ' , msg);
-    console.log("outLogger: ");
-    console.log("outLogger: ", outLogger);
-    outLogger.info(s);
+    console.log(date() + ' ' , msg);
+    outLogger.info(prettyjson.render(msg));
   }
   else {
     console.log(date() + ' ' + msg, obj ? obj : '');
+    outLogger.info(msg + obj ? prettyjson.render(obj) : '');
   }
 };
 
-module.exports.connection_log = function(req) {
+module.exports.connection_log = function(req, msg) {
   if (req.headers) this.log('Request Headers: ', req.headers);
   var ip = req.headers['x-forwarded-for'] ||
     req.connection.remoteAddress ||
@@ -95,24 +73,19 @@ module.exports.connection_log = function(req) {
       coords: geolocation.ll
     } : null
   };
-  return (str);
+  console.log(date() + msg ? msg : ' ' , str);
+  connLogger.info(msg ? msg : ' ' + prettyjson.render(str));
+  //return (str);
 };
 
 module.exports.error = function(msg, obj){
-  if (!mLogger) mLogger = new LoggerHandler();
   if (typeof msg === 'object') {
     console.error(date() + ' ' , msg);
-    errLogger.error('%s  %s', date(), msg);
-    mLogger.err(msg);
+    errLogger.error(prettyjson.render(msg));
   }
   else {
     console.error(date() + ' ' + msg, obj ? obj : '');
+    errLogger.error(msg + ' ' + obj ? prettyjson.render(obj) : '');
   }
 };
 
-var start = function (){
-  if (!mLogger) mLogger = new LoggerHandler();
-  mLogger.log(date()+' Hello World!');
-  mLogger.err(date()+' No World!');
-}
-start();
