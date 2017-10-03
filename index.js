@@ -3,6 +3,7 @@ var path = require('path')
   , prettyjson = require('prettyjson')
   , winston = require('winston');
 require('winston-daily-rotate-file');
+const util = require('util')
 
 var date = function(){
   return '[' +
@@ -31,33 +32,38 @@ var logger = function (filename, level){
       return date();
     }
   });
-}
+};
 
-var outLogger = new (winston.Logger)({
-  transports: [ logger('./out.log', 'info') ]
-});
-
-var connLogger = new (winston.Logger)({
-  transports: [ logger('./conn.log', 'info') ]
-});
-
-var errLogger = new (winston.Logger)({
-  transports: [ logger('./err.log', 'error') ]
-});
+var outLogger = new (winston.Logger)({ transports: [ logger('./out.log', 'info') ] });
+var debugLogger = new (winston.Logger)({ transports: [ logger('./debug.log', 'debug') ] });
+var errLogger = new (winston.Logger)({ transports: [ logger('./err.log', 'error') ] });
+var connLogger = new (winston.Logger)({ transports: [ logger('./conn.log', 'info') ] });
 
 module.exports.log = function(msg, obj){
   if (typeof msg === 'object') {
     console.log(date() + ' ' , msg);
-    outLogger.info(prettyjson.render(msg));
+    outLogger.info(JSON.stringify(msg, null, 2));
   }
   else {
     console.log(date() + ' ' + msg, obj ? obj : '');
-    outLogger.info(msg + obj ? prettyjson.render(obj) : '');
+    outLogger.info(msg + (obj ? JSON.stringify(obj, null, 2) : ''));
+  }
+};
+
+module.exports.error = function(msg, obj){
+  if (typeof msg === 'object') {
+    console.error(date() + ' ' , msg);
+    errLogger.error(JSON.stringify(msg, null, 2));
+  }
+  else {
+    console.error(date() + ' ' + msg, obj ? obj : '');
+    errLogger.error(msg + ' ' + (obj ? JSON.stringify(obj, null, 2) : ''));
   }
 };
 
 module.exports.connection_log = function(req, msg) {
-  if (req.headers) this.log('Request Headers: ', req.headers);
+  this.log("connection request")
+  if (req.headers) connLogger.info('Request Headers: ', prettyjson.render(req.headers));
   var ip = req.headers['x-forwarded-for'] ||
     req.connection.remoteAddress ||
     req.socket.remoteAddress ||
@@ -74,18 +80,6 @@ module.exports.connection_log = function(req, msg) {
     } : null
   };
   console.log(date() + msg ? msg : ' ' , str);
-  connLogger.info(msg ? msg : ' ' + prettyjson.render(str));
-  //return (str);
+  connLogger.info(msg + (str ? JSON.stringify(str, null, 2) : ''));
+  return (str);
 };
-
-module.exports.error = function(msg, obj){
-  if (typeof msg === 'object') {
-    console.error(date() + ' ' , msg);
-    errLogger.error(prettyjson.render(msg));
-  }
-  else {
-    console.error(date() + ' ' + msg, obj ? obj : '');
-    errLogger.error(msg + ' ' + obj ? prettyjson.render(obj) : '');
-  }
-};
-
