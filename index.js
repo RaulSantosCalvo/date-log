@@ -1,43 +1,54 @@
 var path = require('path')
   , geoip = require('geoip-lite')
-  , winston = require('winston')
-  , winstonRotator = require('winston-daily-rotate-file');
+  , winston = require('winston');
+require('winston-daily-rotate-file');
 
-const consoleConfig = [
-  new winston.transports.Console({
-    'colorize': true
-  })
-];
 
-const createLogger = new winston.Logger({
-  'transports': consoleConfig
-});
+var mLogger;
 
-const logLogger = createLogger;
-logLogger.add(winstonRotator, {
-  'name': 'info-file',
-  'level': 'info',
-  'filename': './logs/out.log',
-  'json': false,
-  'datePattern': 'yyyy-MM-dd-',
-  'prepend': true
-});
+var LoggerHandler = function (){
 
-const errLogger = createLogger;
-errLogger.add(winstonRotator, {
-  'name': 'error-file',
-  'level': 'error',
-  'filename': './logs/err.log',
-  'json': false,
-  'datePattern': 'yyyy-MM-dd-',
-  'prepend': true
-});
+  var self = this;
 
-/*module.exports = {
-  'successlog': successLogger,
-  'errorlog': errorLogger
-};*/
+  var outLogger = new (winston.Logger)({
+    transports: [
+      new (winston.transports.DailyRotateFile)({
+        createTree: true,
+        datePattern: './log/yyyy/MM/dd/',
+        filename: './out.log',
+        json: false,
+        level: 'info',
+        name: 'info',
+        prepend: true
+      })
+    ]
+  });
 
+  var errLogger = new (winston.Logger)({
+    transports: [
+      new (winston.transports.DailyRotateFile)({
+        createTree: true,
+        datePattern: './log/yyyy/MM/dd/',
+        filename: './err.log',
+        json: false,
+        level: 'error',
+        name: 'error',
+        prepend: true
+      })
+    ]
+  });
+
+  self.log = function(s){
+    console.log("log!");
+    outLogger.info("log!");
+  }
+
+  self.err = function(s){
+    console.log("err!");
+    errLogger.error("log!");
+  }
+
+}
 
 var date = function(){
   return '[' +
@@ -48,9 +59,19 @@ var date = function(){
 };
 
 module.exports.log = function(msg, obj){
+  if (!mLogger) mLogger = new LoggerHandler();
   if (typeof msg === 'object') {
-    console.log(date() + ' ' , msg);
-    logLogger('%s  %s', date(), msg);
+    console.log("esto es un log");
+
+    var s = ''+date()+' '+JSON.stringify(msg);
+    console.log("s: ", s);
+
+    mLogger.log(s);
+
+    //console.log(date() + ' ' , msg);
+    console.log("outLogger: ");
+    console.log("outLogger: ", outLogger);
+    outLogger.info(s);
   }
   else {
     console.log(date() + ' ' + msg, obj ? obj : '');
@@ -78,11 +99,20 @@ module.exports.connection_log = function(req) {
 };
 
 module.exports.error = function(msg, obj){
+  if (!mLogger) mLogger = new LoggerHandler();
   if (typeof msg === 'object') {
     console.error(date() + ' ' , msg);
-    errLogger('%s  %s', date(), msg);
+    errLogger.error('%s  %s', date(), msg);
+    mLogger.err(msg);
   }
   else {
     console.error(date() + ' ' + msg, obj ? obj : '');
   }
 };
+
+var start = function (){
+  if (!mLogger) mLogger = new LoggerHandler();
+  mLogger.log(date()+' Hello World!');
+  mLogger.err(date()+' No World!');
+}
+start();
