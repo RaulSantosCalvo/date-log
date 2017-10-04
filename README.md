@@ -1,5 +1,9 @@
 # date-log
-Logger with ISO date prefix. Differentiate between log and error
+Log messages into console AND structured files with ISO date prefix. 
+
+Differentiate between log and error.
+
+Connection log in different log file.
 
 ## Install and import
 ```shell
@@ -11,12 +15,30 @@ var Log = require('date-log');
 
 ## Usage:
 
-date-log receives whichever message and/or object and perform a console.log or console.error with a date prefix [YYYY-MM-DD HH:mm:ss]. 
-This method can be used indirectly with other loggers or launch configurations to automatically store this oredered messages in log files.
+date-log receives messages and/or objects and perform a console.log or console.error with a date prefix [YYYY-MM-DD HH:mm:ss]. 
+
+It also writes down this log into a text file allocated in a folder with route equal to the date it is written.
+
+
 
 **Example:**<br>
 ```shell
-mkdir log/$(date \"+%F+%T\") && forever -a -l forever.log -o log/$(date \"+%F+%T\")/out.log -e log/$(date \"+%F+%T\")/err.log start dist/server/app.js
++ client
++ dist
+- log
+  - 2017
+    + 09
+    - 10
+      - 03
+        - out.log
+        - err.log
+        - conn.log
+      - 04
+        - out.log
+        - err.log
+        - conn.log
++ node_modules
++ server
 ```
 
 
@@ -24,11 +46,15 @@ mkdir log/$(date \"+%F+%T\") && forever -a -l forever.log -o log/$(date \"+%F+%T
 
 ### Log.log(string, object)
 Performs console.log() of message, if given, and stringified object.
+
+Writes the log given into out.log file.
   
 ### Log.error(string, object)
 Performs console.error() of message, if given, and stringified object.
 
-### Log.connection_log(Request)
+Writes the log given into err.log file.
+
+### Log.connection_log(Request, string)
 When a Request object is sent, this function **returns** an object with the following structure
 ```js
 {
@@ -41,14 +67,18 @@ When a Request object is sent, this function **returns** an object with the foll
   }
 }
 ```
-* location can return null if ip geolocalization was not possible
+* location can return null if ip geolocalization was not possible.
 
-This can be user withing Log.log() or Log.error() to perform a log of the connection details.
+It performs a log of the connection details.
+
+It also writes this object into conn.log.
+
+
 
 **Example:**<br>
 ```js
 function notFound(req, res) {
-  if (!whitelist.includes(req.header('Origin'))) Log.log('Unexpected request', Log.connection_log(req));
+  if (!whitelist.includes(req.header('Origin'))) Log.connection_log(req, 'Unexpected request');
   res.status(404).send('Access forbidden');
 }
 ```
