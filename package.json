@@ -1,27 +1,30 @@
 {
-  "name": "folder-mapper",
-  "version": "1.0.15",
-  "description": "Map your application from app base file or from a given directory",
+  "name": "date-log",
+  "version": "1.0.10",
+  "description": "Logger with ISO date prefix. Differentiate between log and error",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test especified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RaulSantosCalvo/folder-mapper.git"
+    "url": "git+https://github.com/RaulSantosCalvo/date-log.git"
   },
   "keywords": [
-    "mean",
-    "app",
-    "map",
-    "mapper",
-    "folder",
-    "directory"
+    "log",
+    "logger",
+    "date",
+    "console"
   ],
   "author": "RaulSantosCalvo",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/RaulSantosCalvo/folder-mapper/issues"
+    "url": "https://github.com/RaulSantosCalvo/date-log/issues"
   },
-  "homepage": "https://github.com/RaulSantosCalvo/folder-mapper#readme"
+  "homepage": "https://github.com/RaulSantosCalvo/date-log#readme",
+  "dependencies": {
+    "geoip-lite": "^1.2.1",
+    "winston": "^2.4.0",
+    "winston-daily-rotate-file": "^1.7.2"
+  }
 }
