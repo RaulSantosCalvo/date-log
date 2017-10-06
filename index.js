@@ -55,7 +55,7 @@ module.exports.error = function(msg, obj) {
 
 module.exports.connection_log = function(req, msg) {
     this.log("connection request")
-    if (req.headers) connLogger.info('Request Headers: ', prettyjson.render(req.headers));
+    if (req.headers) connLogger.info('Request Headers: ', JSON.stringify(req.headers, null, 2));
     var ip = req.headers['x-forwarded-for'] ||
         req.connection.remoteAddress ||
         req.socket.remoteAddress ||
