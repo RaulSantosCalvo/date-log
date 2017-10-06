@@ -31,7 +31,7 @@ var debugLogger = new (winston.Logger)({ transports: [ logger('./debug.log', 'de
 var errLogger = new (winston.Logger)({ transports: [ logger('./err.log', 'error') ] });
 var connLogger = new (winston.Logger)({ transports: [ logger('./conn.log', 'info') ] });
 
-module.exports.log = function(msg, obj) {
+var log = function(msg, obj) {
     if (typeof msg === 'object') {
         console.log(date() + ' ', msg);
         outLogger.info(JSON.stringify(msg, null, 2));
@@ -42,7 +42,7 @@ module.exports.log = function(msg, obj) {
     }
 };
 
-module.exports.error = function(msg, obj) {
+var error = function(msg, obj) {
     if (typeof msg === 'object') {
         console.error(date() + ' ', msg);
         errLogger.error(JSON.stringify(msg, null, 2));
@@ -53,25 +53,34 @@ module.exports.error = function(msg, obj) {
     }
 };
 
-module.exports.connection_log = function(req, msg) {
-    this.log("connection request")
-    if (req.headers) connLogger.info('Request Headers: ', JSON.stringify(req.headers, null, 2));
-    var ip = req.headers['x-forwarded-for'] ||
-        req.connection.remoteAddress ||
-        req.socket.remoteAddress ||
-        req.connection.socket.remoteAddress ||
-        req.ip;
-    var geolocation = geoip.lookup(ip);
-    var str = {
-        hostname: req.hostname,
-        ip: ip,
-        location: geolocation ? {
-            country: geolocation.country,
-            city: geolocation.city,
-            coords: geolocation.ll
-        } : null
-    };
-    console.log(date() + msg ? msg : ' ', str);
+var connection_log = function(req, msg, allowed) {
+    log(msg, allowed ? null : 'More info in conn.log');
+    var str = null;
+    if (!allowed) {
+        if (req.headers) connLogger.info('Request Headers: ', JSON.stringify(req.headers, null, 2));
+        var ip = req.headers['x-forwarded-for'] ||
+            req.connection.remoteAddress ||
+            req.socket.remoteAddress ||
+            req.connection.socket.remoteAddress ||
+            req.ip;
+        var geolocation = geoip.lookup(ip);
+        str = {
+            hostname: req.hostname,
+            ip: ip,
+            location: geolocation ? {
+                country: geolocation.country,
+                city: geolocation.city,
+                coords: geolocation.ll
+            } : null
+        };
+    }
+    console.log(date() + msg ? msg : ' ', str ? str : '');
     connLogger.info(msg + (str ? JSON.stringify(str, null, 2) : ''));
     return (str);
 };
+
+module.exports = {
+    log: log,
+    error: error,
+    connection_log: connection_log
+}
