@@ -54,7 +54,7 @@ var error = function(msg, obj) {
 };
 
 var connection_log = function(req, msg, allowed) {
-    log(msg, allowed ? null : 'More info in conn.log');
+    log(msg + (allowed ? '' : ' // More info in conn.log'));
     var str = null;
     if (!allowed) {
         if (req.headers) connLogger.info('Request Headers: ', JSON.stringify(req.headers, null, 2));
