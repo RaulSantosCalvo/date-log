@@ -1,6 +1,7 @@
-var path = require('path')
-  , geoip = require('geoip-lite')
-  , winston = require('winston');
+var geoip = require('geoip-lite'),
+    winston = require('winston'),
+    fs = require('fs'),
+    util = require('util');
 
 require('winston-daily-rotate-file');
 
@@ -30,30 +31,44 @@ var outLogger = new (winston.Logger)({ transports: [ logger('./out.log', 'info')
 var debugLogger = new (winston.Logger)({ transports: [ logger('./debug.log', 'debug') ] });
 var errLogger = new (winston.Logger)({ transports: [ logger('./err.log', 'error') ] });
 var connLogger = new (winston.Logger)({ transports: [ logger('./conn.log', 'info') ] });
+var additionalLogger = function(filename) {
+    return new (winston.Logger)({ transports: [ logger('./'+filename+'.log', 'info') ] });
+};
 
-var log = function(msg, obj) {
+var log = function(msg, obj, show) {
     if (typeof msg === 'object') {
-        console.log(date() + ' ', msg);
+        if (show) console.log(date() + ' ', msg);
         outLogger.info(JSON.stringify(msg, null, 2));
     }
     else {
-        console.log(date() + ' ' + msg, obj ? obj : '');
+        if (show) console.log(date() + ' ' + msg, obj ? obj : '');
         outLogger.info(msg + (obj ? JSON.stringify(obj, null, 2) : ''));
     }
 };
 
-var error = function(msg, obj) {
+var error = function(msg, obj, show) {
     if (typeof msg === 'object') {
-        console.error(date() + ' ', msg);
+        if (show) console.error(date() + ' ', msg);
         errLogger.error(JSON.stringify(msg, null, 2));
     }
     else {
-        console.error(date() + ' ' + msg, obj ? obj : '');
+        if (show) console.error(date() + ' ' + msg, obj ? obj : '');
         errLogger.error(msg + ' ' + (obj ? JSON.stringify(obj, null, 2) : ''));
     }
 };
 
-var connection_log = function(req, msg, allowed) {
+var write = function(filename, msg, obj, show) {
+    if (typeof msg === 'object') {
+        if (show) console.log(date() + ' ', msg);
+        additionalLogger(filename).info(JSON.stringify(msg, null, 2));
+    }
+    else {
+        if (show) console.log(date() + ' ' + msg, obj ? obj : '');
+        additionalLogger(filename).info(msg + (obj ? JSON.stringify(obj, null, 2) : ''));
+    }
+};
+
+var connection_log = function(req, msg, allowed, show) {
     log(msg + (allowed ? '' : ' // More info in conn.log'));
     var str = null;
     if (!allowed) {
@@ -74,13 +89,24 @@ var connection_log = function(req, msg, allowed) {
             } : null
         };
     }
-    console.log(date() + msg ? msg : ' ', str ? str : '');
+    if (show) console.log(date() + msg ? msg : ' ', str ? str : '');
     connLogger.info(msg + (str ? JSON.stringify(str, null, 2) : ''));
     return (str);
+};
+
+var redirectConsole = function() {
+    console.log("PLEASE, FOR CONSOLE LOGS TAIL 'OUT' AND 'ERR' .LOG FILES IN SERVER WITH DESIRED DATES IN FOLDER STRUCTURE");
+    process.stdout.write = log;
+    process.stderr.write = error;
+    process.on('uncaughtException', function (err) {
+        console.error((err && err.stack) ? err.stack : err);
+    });
 };
 
 module.exports = {
     log: log,
     error: error,
-    connection_log: connection_log
-}
+    write: write,
+    connection_log: connection_log,
+    redirectConsole: redirectConsole
+};
