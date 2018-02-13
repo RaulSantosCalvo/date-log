@@ -80,7 +80,7 @@ var LogHandler = function () {
     };
 
     self.connection_log = function (req, msg, allowed, show) {
-        log(msg + (allowed ? '' : ' // More info in conn.log'));
+        self.log(msg + (allowed ? '' : ' // More info in conn.log'));
         var str = null;
         if (!allowed) {
             if (req.headers) connLogger.info('Request Headers: ', JSON.stringify(req.headers, null, 2));
