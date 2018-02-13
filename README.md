@@ -1,13 +1,14 @@
 # date-log
-Log messages into console AND structured files with ISO date prefix. 
+Log messages into structured files with ISO date prefix. 
 
-Differentiate between log and error.
+4 default files available. Possibility to generate own log files.
 
 Connection log in different log file.
 
 ## Install and import
 ```shell
 npm install --save date-log
+yarn add date-log
 ```
 ```js
 var Log = require('date-log');
@@ -44,18 +45,32 @@ It also writes down this log into a text file allocated in a folder with route e
 
 ## Functions:
 
-### Log.log(string, object)
-Performs console.log() of message, if given, and stringified object.
+### Log.redirectConsole()
+From the moment this function is called, every console.log or console.error will be redirected to Log.log and Log.error respectively.
 
-Writes the log given into out.log file.
-  
-### Log.error(string, object)
-Performs console.error() of message, if given, and stringified object.
+Recommended for production deployment.
 
-Writes the log given into err.log file.
+### Log.log(message: string, obj: object, show: boolean)
+Writes the given string message, if any, and the stringified object into out.log file.
 
-### Log.connection_log(Request, string)
-When a Request object is sent, this function **returns** an object with the following structure
+If show flag is passed, it also sends the message to console.log (for developing purposes)
+
+### Log.error(message: string, obj: object, show: boolean)
+Writes the given string message, if any, and the stringified object into err.log file.
+
+If show flag is passed, it also sends the message to console.error (for developing purposes)
+
+### Log.write(filename: string, message: string, obj: object, show: boolean)
+Writes the log given string message, if any, and the stringified object into <filename>.log file.
+
+If show flag is passed, it also sends the message to console.error (for developing purposes)
+
+The log file with given name remains open for further usage.
+
+### Log.connection_log(req: Request, message: string, allowed: boolean, show: boolean)
+If allowed is true, this function logs the connection was succesful.
+
+Else, it uses the Request object sent to create a log of the connection details. Then it **returns** an object with the following structure
 ```js
 {
   hostname: string,
@@ -69,8 +84,6 @@ When a Request object is sent, this function **returns** an object with the foll
 ```
 * location can return null if ip geolocalization was not possible.
 
-It performs a log of the connection details.
-
 It also writes this object into conn.log.
 
 
@@ -78,7 +91,9 @@ It also writes this object into conn.log.
 **Example:**<br>
 ```js
 function notFound(req, res) {
-  if (!whitelist.includes(req.header('Origin'))) Log.connection_log(req, 'Unexpected request');
+  if (!whitelist.includes(req.header('Origin'))) {
+      Log.connection_log(req, 'Unexpected request');
+  }
   res.status(404).send('Access forbidden');
 }
 ```
