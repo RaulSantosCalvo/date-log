@@ -1,7 +1,7 @@
 {
   "name": "date-log",
-  "version": "1.1.0",
-  "description": "Logger with ISO date prefix. Differentiate between log and error",
+  "version": "2.0.1",
+  "description": "Logger with ISO date prefix",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test especified\" && exit 1"
